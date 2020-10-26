@@ -1,33 +1,72 @@
 const express = require("express");
 const cors = require("cors");
-
-// const { v4: uuid } = require('uuid');
-
+const { v4: uuid, isUuid } = require('uuid');
 const app = express();
 
 app.use(express.json());
 app.use(cors());
 
-const repositories = [];
+const repositories = []
+let count = 0
 
 app.get("/repositories", (request, response) => {
-  // TODO
+  return response.json(repositories)
 });
 
 app.post("/repositories", (request, response) => {
-  // TODO
+  const {title, url, techs, likes} = request.body
+
+  const repository = {id: uuid(), likes: 0, title, url: url, techs}
+  repositories.push(repository)
+  return response.json(repository)
 });
 
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+  const { id } = request.params
+  const {title, url, techs  } = request.body
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id)
+
+  if (repositoryIndex < 0){
+    return response.status(400).json({error: "Repository not found"})
+  }
+
+  const repository = {
+    id,
+    title,
+    url,
+    techs,
+    likes: 0
+  }
+  repositories[repositoryIndex] = repository
+  return response.json(repository)
 });
 
-app.delete("/repositories/:id", (request, response) => {
-  // TODO
+app.delete("/repositories/:id",(request, response) => {
+  const { id } = request.params
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id)
+
+  if (repositoryIndex < 0){
+    return response.status(400).json({error: "Repository not found"})
+  }
+  repositories.splice(repositoryIndex, 1)
+  return response.status(204).send()
+
 });
 
-app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+app.post("/repositories/:id/like",  (request, response) => {
+  count += 1
+  const { id } = request.params
+  const { likes } = request.body
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id)
+  if (repositoryIndex < 0){
+    return response.status(400).json({error: "Not found"})
+  }
+
+  const liked = {
+    likes: count
+  }
+  const likeIncrement = repositories[repositoryIndex].likes = liked
+  return response.json(liked)
 });
 
 module.exports = app;
